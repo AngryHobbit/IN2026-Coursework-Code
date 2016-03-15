@@ -20,6 +20,8 @@ Asteroids::Asteroids(int argc, char *argv[])
 {
 	mLevel = 0;
 	mAsteroidCount = 0;
+	mPowerUpCount = 0;
+	mGameStarted = false;
 }
 
 /** Destructor. */
@@ -58,11 +60,11 @@ void Asteroids::Start()
 	Animation *asteroid1_anim = AnimationManager::GetInstance().CreateAnimationFromFile("asteroid1", 128, 8192, 128, 128, "asteroid1_fs.png");
 	Animation *spaceship_anim = AnimationManager::GetInstance().CreateAnimationFromFile("spaceship", 128, 128, 128, 128, "spaceship_fs.png");
 
-	// Create a spaceship and add it to the world
-	mGameWorld->AddObject(CreateSpaceship());
-	// Create some asteroids and add them to the world
-	CreateAsteroids(10);
 
+	// Create a spaceship and add it to the world
+	//mGameWorld->AddObject(CreateSpaceship());
+	// Create some asteroids and add them to the world
+	//CreateAsteroids(10);
 	//Create the GUI
 	CreateGUI();
 
@@ -87,13 +89,27 @@ void Asteroids::Stop()
 
 void Asteroids::OnKeyPressed(uchar key, int x, int y)
 {
-	switch (key)
+	if (!mGameStarted)
 	{
-	case ' ':
-		mSpaceship->Shoot();
-		break;
-	default:
-		break;
+		// Create a spaceship and add it to the world
+		mGameWorld->AddObject(CreateSpaceship());
+		// Create some asteroids and add them to the world
+		CreateAsteroids(10);
+		CreatePowerUp(1);
+		mGameStarted = true;
+		mStartLabel->SetVisible(false);
+	}
+
+	else
+	{
+		switch (key)
+		{
+		case ' ':
+			mSpaceship->Shoot();
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -101,32 +117,38 @@ void Asteroids::OnKeyReleased(uchar key, int x, int y) {}
 
 void Asteroids::OnSpecialKeyPressed(int key, int x, int y)
 {
-	switch (key)
+	if (mGameStarted)
 	{
-	// If up arrow key is pressed start applying forward thrust
-	case GLUT_KEY_UP: mSpaceship->Thrust(10); break;
-	// If left arrow key is pressed start rotating anti-clockwise
-	case GLUT_KEY_LEFT: mSpaceship->Rotate(90); break;
-	// If right arrow key is pressed start rotating clockwise
-	case GLUT_KEY_RIGHT: mSpaceship->Rotate(-90); break;
-	// Default case - do nothing
-	default: break;
+		switch (key)
+		{
+			// If up arrow key is pressed start applying forward thrust
+		case GLUT_KEY_UP: mSpaceship->Thrust(15); break;
+			// If left arrow key is pressed start rotating anti-clockwise
+		case GLUT_KEY_LEFT: mSpaceship->Rotate(110); break;
+			// If right arrow key is pressed start rotating clockwise
+		case GLUT_KEY_RIGHT: mSpaceship->Rotate(-110); break;
+			// Default case - do nothing
+		default: break;
+		}
 	}
 }
 
 void Asteroids::OnSpecialKeyReleased(int key, int x, int y)
 {
-	switch (key)
+	if (mGameStarted)
 	{
-	// If up arrow key is released stop applying forward thrust
-	case GLUT_KEY_UP: mSpaceship->Thrust(0); break;
-	// If left arrow key is released stop rotating
-	case GLUT_KEY_LEFT: mSpaceship->Rotate(0); break;
-	// If right arrow key is released stop rotating
-	case GLUT_KEY_RIGHT: mSpaceship->Rotate(0); break;
-	// Default case - do nothing
-	default: break;
-	} 
+		switch (key)
+		{
+			// If up arrow key is released stop applying forward thrust
+		case GLUT_KEY_UP: mSpaceship->Thrust(0); break;
+			// If left arrow key is released stop rotating
+		case GLUT_KEY_LEFT: mSpaceship->Rotate(0); break;
+			// If right arrow key is released stop rotating
+		case GLUT_KEY_RIGHT: mSpaceship->Rotate(0); break;
+			// Default case - do nothing
+		default: break;
+		}
+	}
 }
 
 
@@ -193,6 +215,17 @@ shared_ptr<GameObject> Asteroids::CreateSpaceship()
 
 }
 
+void Asteroids::CreatePowerUp(const uint num_powerUp)
+{
+	mPowerUpCount = num_powerUp;
+
+	for (uint i = 0; i < num_powerUp; i++) 
+	{
+		shared_ptr<GameObject> powerUp = make_shared<PowerUp>();
+		mGameWorld->AddObject(powerUp);
+	}
+}
+
 void Asteroids::CreateAsteroids(const uint num_asteroids)
 {
 	mAsteroidCount = num_asteroids;
@@ -230,6 +263,16 @@ void Asteroids::CreateGUI()
 	// Add the GUILabel to the GUIComponent  
 	shared_ptr<GUIComponent> lives_component = static_pointer_cast<GUIComponent>(mLivesLabel);
 	mGameDisplay->GetContainer()->AddComponent(lives_component, GLVector2f(0.0f, 0.0f));
+
+	//Start Label
+	mStartLabel = make_shared<GUILabel>("Press Any Key To Start");
+
+	mStartLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+
+	mStartLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_MIDDLE);
+	
+	shared_ptr<GUIComponent> start_componet = static_pointer_cast<GUIComponent>(mStartLabel);
+	mGameDisplay->GetContainer()->AddComponent(start_componet, GLVector2f(0.5f, 0.5f));
 
 	// Create a new GUILabel and wrap it up in a shared_ptr
 	mGameOverLabel = shared_ptr<GUILabel>(new GUILabel("GAME OVER"));

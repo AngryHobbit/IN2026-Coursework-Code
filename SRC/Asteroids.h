@@ -9,6 +9,7 @@
 #include "ScoreKeeper.h"
 #include "Player.h"
 #include "IPlayerListener.h"
+#include "PowerUp.h"
 
 class GameObject;
 class Spaceship;
@@ -52,13 +53,15 @@ private:
 	shared_ptr<GUILabel> mScoreLabel;
 	shared_ptr<GUILabel> mLivesLabel;
 	shared_ptr<GUILabel> mGameOverLabel;
-
-	uint mLevel;
+	shared_ptr<GUILabel> mStartLabel;
 	uint mAsteroidCount;
+	uint mLevel;
+	uint mPowerUpCount;
 
 	void ResetSpaceship();
-	shared_ptr<GameObject> CreateSpaceship();
+	shared_ptr<GameObject>CreateSpaceship();
 	void CreateGUI();
+	void CreatePowerUp(const uint num_powerUp);
 	void CreateAsteroids(const uint num_asteroids);
 	shared_ptr<GameObject> CreateExplosion();
 	
@@ -68,6 +71,8 @@ private:
 
 	ScoreKeeper mScoreKeeper;
 	Player mPlayer;
+
+	bool mGameStarted;
 };
 
 #endif
