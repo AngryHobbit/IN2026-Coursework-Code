@@ -15,18 +15,19 @@ PowerUp::PowerUp(void) : GameObject("PowerUp")
 	mVelocity.z = 0.0;
 }
 
-PowerUp::~PowerUp(void)
+PowerUp::~PowerUp(void) 
 {
 }
 
 void PowerUp::Render(void)
 {
+	glScalef(2.0, 2.0, 2.0);
 	// Disable lighting for solid colour lines
 	glDisable(GL_LIGHTING);
 	// Start drawing lines
 	glBegin(GL_LINE_LOOP);
-	// Set colour to grey
-	glColor3f(0.6, 0.6, 0.6);
+	// Set colour to Yellow
+	glColor3f(0.9, 0.9, 0.0);
 	// Add vertices to draw an octagon
 	glVertex3f(-7, -7, 0.0);
 	glVertex3f(-10, 0, 0.0);
@@ -44,6 +45,8 @@ void PowerUp::Render(void)
 
 bool PowerUp::CollisionTest(shared_ptr<GameObject> o)
 {
+	if (o->GetType() == GameObjectType("Asteroid")) return false;
+	if (o->GetType() == GameObjectType("Bullet")) return false;
 	if (GetType() == o->GetType()) return false;
 	if (mBoundingShape.get() == NULL) return false;
 	if (o->GetBoundingShape().get() == NULL) return false;

@@ -12,6 +12,9 @@ using namespace std;
 Spaceship::Spaceship()
 	: GameObject("Spaceship"), mThrust(0)
 {
+	mShieldOn = true;
+	mShieldLevel2 = false;
+	mShieldLevel3 = false;
 }
 
 /** Construct a spaceship with given position, velocity, acceleration, angle, and rotation. */
@@ -43,6 +46,8 @@ void Spaceship::Update(int t)
 /** Render this spaceship. */
 void Spaceship::Render(void)
 {
+
+
 	if (mSpaceshipShape.get() != NULL) mSpaceshipShape->Render();
 
 	// If ship is thrusting
@@ -50,7 +55,48 @@ void Spaceship::Render(void)
 		mThrusterShape->Render();
 	}
 
+
+	// Enable lighting
+	//glEnable(GL_LIGHTING);
+
 	GameObject::Render();
+
+	if (mShieldOn)
+	{
+		glScalef(7, 6, 8);
+		// Disable lighting for solid colour lines
+		glDisable(GL_LIGHTING);
+		// Start drawing lines
+		glBegin(GL_LINE_LOOP);
+		if (mShieldLevel3)
+		{
+			// Set colour to Green
+			glColor3f(0.0, 0.9, 0.0);
+		}
+		else if (mShieldLevel2)
+		{
+			// Set colour to Blue
+			glColor3f(0.0, 0.0, 0.9);
+		}
+		else
+		{
+			// Set colour to Red
+			glColor3f(0.9, 0.0, 0.0);
+		}
+		// Add vertices to draw an octagon
+		glVertex3f(-7, -7, 0.0);
+		glVertex3f(-10, 0, 0.0);
+		glVertex3f(-7, 7, 0.0);
+		glVertex3f(0, 10, 0.0);
+		glVertex3f(7, 7, 0.0);
+		glVertex3f(10, 0, 0.0);
+		glVertex3f(7, -7, 0.0);
+		glVertex3f(0, -10, 0.0);
+		// Finish drawing lines
+		glEnd();
+		// Enable lighting
+		glEnable(GL_LIGHTING);
+	}
 }
 
 /** Fire the rockets. */
@@ -102,5 +148,23 @@ bool Spaceship::CollisionTest(shared_ptr<GameObject> o)
 
 void Spaceship::OnCollision(const GameObjectList &objects)
 {
-	mWorld->FlagForRemoval(GetThisPtr());
+	if (mShieldOn == true)
+	{
+		if (mShieldLevel3 == true)
+		{
+			mShieldLevel3 = false;
+		}
+		else if (mShieldLevel2 == true)
+		{
+			mShieldLevel2 = false;
+		}
+		else
+		{
+			mShieldOn = false;
+		}
+	}
+	else
+	{
+		mWorld->FlagForRemoval(GetThisPtr());
+	}
 }

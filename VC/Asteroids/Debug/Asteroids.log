@@ -1,4 +1,6 @@
-﻿  PowerUp.cpp
+﻿  Asteroids.cpp
+  PowerUp.cpp
+  Generating Code...
 Asteroid.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
   Asteroids.vcxproj -> D:\Documents\GitHub\IN2026-Coursework-Code\VC\Asteroids\..\..\bin\Asteroids.exe
   ..\..\assets\asteroid.shape
