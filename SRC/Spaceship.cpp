@@ -15,6 +15,7 @@ Spaceship::Spaceship()
 	mShieldOn = true;
 	mShieldLevel2 = false;
 	mShieldLevel3 = false;
+	mInvincible = false;
 }
 
 /** Construct a spaceship with given position, velocity, acceleration, angle, and rotation. */
@@ -68,7 +69,11 @@ void Spaceship::Render(void)
 		glDisable(GL_LIGHTING);
 		// Start drawing lines
 		glBegin(GL_LINE_LOOP);
-		if (mShieldLevel3)
+		if (mInvincible)
+		{
+			glColor3f(0.9, 0.9, 0.0);
+		}
+		else if (mShieldLevel3)
 		{
 			// Set colour to Green
 			glColor3f(0.0, 0.9, 0.0);
@@ -140,7 +145,7 @@ void Spaceship::Shoot(void)
 
 bool Spaceship::CollisionTest(shared_ptr<GameObject> o)
 {
-	if (o->GetType() != GameObjectType("Asteroid")) return false;
+	if (o->GetType() != GameObjectType("Asteroid") && o->GetType() != GameObjectType("SmallAsteroid")) return false;
 	if (mBoundingShape.get() == NULL) return false;
 	if (o->GetBoundingShape().get() == NULL) return false;
 	return mBoundingShape->CollisionTest(o->GetBoundingShape());
@@ -148,17 +153,17 @@ bool Spaceship::CollisionTest(shared_ptr<GameObject> o)
 
 void Spaceship::OnCollision(const GameObjectList &objects)
 {
-	if (mShieldOn == true)
+	if (mShieldOn == true || mInvincible == true)
 	{
-		if (mShieldLevel3 == true)
+		if (mShieldLevel3 == true && mInvincible == false)
 		{
 			mShieldLevel3 = false;
 		}
-		else if (mShieldLevel2 == true)
+		else if (mShieldLevel2 == true && mInvincible == false)
 		{
 			mShieldLevel2 = false;
 		}
-		else
+		else if (mInvincible == false)
 		{
 			mShieldOn = false;
 		}

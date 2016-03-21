@@ -23,6 +23,11 @@ public:
  			mScore += 10;
 			FireScoreChanged();
 		}
+
+		if (object->GetType() == GameObjectType("SmallAsteroid")) {
+			mScore += 5;
+			FireScoreChanged();
+		}
 	}
 
 	void AddListener(shared_ptr<IScoreListener> listener)

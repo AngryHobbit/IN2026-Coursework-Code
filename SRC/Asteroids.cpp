@@ -11,6 +11,8 @@
 #include "BoundingSphere.h"
 #include "GUILabel.h"
 #include "Explosion.h"
+#include "PowerUp.h"
+#include "SmallAsteroid.h"
 
 // PUBLIC INSTANCE CONSTRUCTORS ///////////////////////////////////////////////
 
@@ -22,7 +24,7 @@ Asteroids::Asteroids(int argc, char *argv[])
 	mAsteroidCount = 0;
 	mPowerUpCount = 0;
 	mGameStarted = false;
-	
+	mCSA = 2;
 }
 
 /** Destructor. */
@@ -98,7 +100,7 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 			// Create a spaceship and add it to the world
 			mGameWorld->AddObject(CreateSpaceship());
 			// Create some asteroids and add them to the world
-			//CreateAsteroids(10);
+			//CreateAsteroids(6);
 			CreatePowerUp(1);
 			mGameStarted = true;
 			mStartLabel->SetVisible(false);
@@ -129,11 +131,11 @@ void Asteroids::OnSpecialKeyPressed(int key, int x, int y)
 		switch (key)
 		{
 			// If up arrow key is pressed start applying forward thrust
-		case GLUT_KEY_UP: mSpaceship->Thrust(15); break;
+		case GLUT_KEY_UP: mSpaceship->Thrust(20); break;
 			// If left arrow key is pressed start rotating anti-clockwise
-		case GLUT_KEY_LEFT: mSpaceship->Rotate(130); break;
+		case GLUT_KEY_LEFT: mSpaceship->Rotate(180); break;
 			// If right arrow key is pressed start rotating clockwise
-		case GLUT_KEY_RIGHT: mSpaceship->Rotate(-130); break;
+		case GLUT_KEY_RIGHT: mSpaceship->Rotate(-180); break;
 			// Default case - do nothing
 		default: break;
 		}
@@ -174,7 +176,7 @@ void Asteroids::OnObjectRemoved(GameWorld* world, shared_ptr<GameObject> object)
 			mSpaceship->mShieldLevel2 = true;
 		}
 		mSpaceship->mShieldOn = true;
-		CreatePowerUp(1);
+		SetTimer(3000, CREATE_POWERUP);
 	}
 
 	if (object->GetType() == GameObjectType("Asteroid"))
@@ -184,11 +186,36 @@ void Asteroids::OnObjectRemoved(GameWorld* world, shared_ptr<GameObject> object)
 		explosion->SetRotation(object->GetRotation());
 		mGameWorld->AddObject(explosion);
 		mAsteroidCount--;
+
+		
+		for (uint i = 0; i < mCSA ; i++)
+		{
+			shared_ptr<GameObject> smallAsteroid = CreateSmallAsteroids(1);
+			smallAsteroid->SetPosition(object->GetPosition());
+			smallAsteroid->SetRotation(object->GetRotation());
+			mGameWorld->AddObject(smallAsteroid);
+		}
+		
 		if (mAsteroidCount <= 0) 
 		{ 
 			SetTimer(1000, START_NEXT_LEVEL); 
 		}
 	}
+	
+	if (object->GetType() == GameObjectType("SmallAsteroid"))
+	{
+		shared_ptr<GameObject> explosion = CreateExplosion();
+		explosion->SetPosition(object->GetPosition());
+		explosion->SetRotation(object->GetRotation());
+		mGameWorld->AddObject(explosion);
+		mAsteroidCount--;
+
+		if (mAsteroidCount <= 0)
+		{
+			SetTimer(1000, START_NEXT_LEVEL);
+		}
+	}
+	
 }
 
 // PUBLIC INSTANCE METHODS IMPLEMENTING ITimerListener ////////////////////////
@@ -213,6 +240,15 @@ void Asteroids::OnTimer(int value)
 		mGameOverLabel->SetVisible(true);
 	}
 
+	if (value == CREATE_POWERUP)
+	{
+		CreatePowerUp(1);
+	}
+
+	if (value == INVINCIBLE)
+	{
+		mSpaceship->mInvincible = false;
+	}
 }
 
 // PROTECTED INSTANCE METHODS /////////////////////////////////////////////////
@@ -265,6 +301,24 @@ void Asteroids::CreateAsteroids(const uint num_asteroids)
 	}
 }
 
+shared_ptr<GameObject> Asteroids::CreateSmallAsteroids(const uint num_asteroids)
+{
+	mAsteroidCount = mAsteroidCount + num_asteroids;
+	for (uint i = 0; i < num_asteroids; i++)
+	{
+		Animation *anim_ptr = AnimationManager::GetInstance().GetAnimationByName("asteroid1");
+		shared_ptr<Sprite> asteroid_sprite = make_shared<Sprite>(anim_ptr->GetWidth(), anim_ptr->GetHeight(), anim_ptr);
+		asteroid_sprite->SetLoopAnimation(true);
+		shared_ptr<GameObject> smallAsteroid = make_shared<SmallAsteroid>();
+		smallAsteroid->SetBoundingShape(make_shared<BoundingSphere>(smallAsteroid->GetThisPtr(), 10.0f));
+		smallAsteroid->SetSprite(asteroid_sprite);
+		smallAsteroid->SetScale(0.1f);
+		mGameWorld->AddObject(smallAsteroid);
+
+		return smallAsteroid;
+
+	}
+}
 void Asteroids::CreateGUI()
 {
 	// Add a (transparent) border around the edge of the game display
@@ -338,6 +392,8 @@ void Asteroids::OnPlayerKilled(int lives_left)
 	{ 
 		SetTimer(1000, CREATE_NEW_PLAYER);
 		mSpaceship->mShieldOn = true;
+		mSpaceship->mInvincible = true;
+		SetTimer(9000, INVINCIBLE);
 	}
 	else
 	{

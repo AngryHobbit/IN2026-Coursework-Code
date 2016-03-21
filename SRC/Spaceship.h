@@ -30,6 +30,7 @@ public:
 	bool mShieldOn;
 	bool mShieldLevel2;
 	bool mShieldLevel3;
+	bool mInvincible;
 
 private:
 	float mThrust;
