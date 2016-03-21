@@ -1,7 +1,5 @@
-﻿  Spaceship.cpp
-  Generating Code...
-  Skipping... (no relevant changes detected)
-  Asteroids.cpp
+﻿  Asteroids.cpp
+d:\documents\github\in2026-coursework-code\src\asteroids.cpp(323): warning C4715: 'Asteroids::CreateSmallAsteroids': not all control paths return a value
 Asteroid.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
   Asteroids.vcxproj -> D:\Documents\GitHub\IN2026-Coursework-Code\VC\Asteroids\..\..\bin\Asteroids.exe
   ..\..\assets\asteroid.shape

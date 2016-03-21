@@ -53,10 +53,16 @@ private:
 	shared_ptr<GUILabel> mLivesLabel;
 	shared_ptr<GUILabel> mGameOverLabel;
 	shared_ptr<GUILabel> mStartLabel;
+	shared_ptr<GUILabel> mHighScoreLabel;
+	shared_ptr<GUILabel> mHighScoreNumLabel;
 	uint mAsteroidCount;
 	uint mLevel;
 	uint mPowerUpCount;
 	uint mCSA;
+
+	string highscore;
+
+
 
 	void ResetSpaceship();
 	shared_ptr<GameObject>CreateSpaceship();

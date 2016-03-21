@@ -104,6 +104,8 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 			CreatePowerUp(1);
 			mGameStarted = true;
 			mStartLabel->SetVisible(false);
+			mHighScoreLabel->SetVisible(false);
+			mHighScoreNumLabel->SetVisible(false);
 			break;
 		default:
 			break;
@@ -319,6 +321,7 @@ shared_ptr<GameObject> Asteroids::CreateSmallAsteroids(const uint num_asteroids)
 
 	}
 }
+
 void Asteroids::CreateGUI()
 {
 	// Add a (transparent) border around the edge of the game display
@@ -331,6 +334,7 @@ void Asteroids::CreateGUI()
 	shared_ptr<GUIComponent> score_component
 		= static_pointer_cast<GUIComponent>(mScoreLabel);
 	mGameDisplay->GetContainer()->AddComponent(score_component, GLVector2f(0.0f, 1.0f));
+
 
 	// Create a new GUILabel and wrap it up in a shared_ptr
 	mLivesLabel = make_shared<GUILabel>("Lives: 3");
@@ -348,7 +352,30 @@ void Asteroids::CreateGUI()
 	mStartLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_MIDDLE);
 	
 	shared_ptr<GUIComponent> start_component = static_pointer_cast<GUIComponent>(mStartLabel);
-	mGameDisplay->GetContainer()->AddComponent(start_component, GLVector2f(0.5f, 0.5f));
+	mGameDisplay->GetContainer()->AddComponent(start_component, GLVector2f(0.5f, 0.6f));
+
+	//HighScore Label
+	mHighScoreLabel = make_shared<GUILabel>("The Last HighScore Was: ");
+
+	mHighScoreLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+
+	mHighScoreLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_MIDDLE);
+
+	shared_ptr<GUIComponent> highScore_component = static_pointer_cast<GUIComponent>(mHighScoreLabel);
+	mGameDisplay->GetContainer()->AddComponent(highScore_component, GLVector2f(0.5f, 0.45f));
+
+	ifstream highScore("HighScore.txt");
+	string highscore;
+	highScore >> highscore;
+	//HighScoreNum Label
+	mHighScoreNumLabel = make_shared<GUILabel>(highscore);
+
+	mHighScoreNumLabel->SetHorizontalAlignment(GUIComponent::GUI_HALIGN_CENTER);
+
+	mHighScoreNumLabel->SetVerticalAlignment(GUIComponent::GUI_VALIGN_MIDDLE);
+
+	shared_ptr<GUIComponent> highScoreNum_component = static_pointer_cast<GUIComponent>(mHighScoreNumLabel);
+	mGameDisplay->GetContainer()->AddComponent(highScoreNum_component, GLVector2f(0.5f, 0.40));
 
 	// Create a new GUILabel and wrap it up in a shared_ptr
 	mGameOverLabel = shared_ptr<GUILabel>(new GUILabel("GAME OVER"));

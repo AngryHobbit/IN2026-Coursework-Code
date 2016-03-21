@@ -28,6 +28,10 @@ public:
 			mScore += 5;
 			FireScoreChanged();
 		}
+		ofstream highScore;
+		highScore.open("HighScore.txt");
+		highScore << mScore;
+		highScore.close();
 	}
 
 	void AddListener(shared_ptr<IScoreListener> listener)
