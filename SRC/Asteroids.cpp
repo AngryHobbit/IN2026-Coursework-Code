@@ -67,7 +67,7 @@ void Asteroids::Start()
 	// Create a spaceship and add it to the world
 	//mGameWorld->AddObject(CreateSpaceship());
 	// Create some asteroids and add them to the world
-	CreateAsteroids(6);
+	CreateAsteroids(5);
 	//Create the GUI
 	CreateGUI();
 
@@ -233,7 +233,7 @@ void Asteroids::OnTimer(int value)
 	if (value == START_NEXT_LEVEL)
 	{
 		mLevel++;
-		int num_asteroids = 6 + 2 * mLevel;
+		int num_asteroids = 3 + (2 * mLevel);
 		CreateAsteroids(num_asteroids);
 	}
 

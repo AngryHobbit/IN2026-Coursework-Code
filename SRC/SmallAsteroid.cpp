@@ -21,8 +21,7 @@ SmallAsteroid::~SmallAsteroid(void)
 
 bool SmallAsteroid::CollisionTest(shared_ptr<GameObject> o)
 {
-	if (o->GetType() == GameObjectType("PowerUp")) return false;
-	if (o->GetType() == GameObjectType("Asteroid")) return false;
+	if (o->GetType() == GameObjectType("PowerUp") || o->GetType() == GameObjectType("Asteroid")) return false;
 	if (GetType() == o->GetType()) return false;
 	if (mBoundingShape.get() == NULL) return false;
 	if (o->GetBoundingShape().get() == NULL) return false;
