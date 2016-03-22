@@ -15,7 +15,7 @@ Spaceship::Spaceship()
 	mShieldOn = true;
 	mShieldLevel2 = false;
 	mShieldLevel3 = false;
-	mInvincible = false;
+	mInvincible = true;
 }
 
 /** Construct a spaceship with given position, velocity, acceleration, angle, and rotation. */
@@ -145,7 +145,7 @@ void Spaceship::Shoot(void)
 
 bool Spaceship::CollisionTest(shared_ptr<GameObject> o)
 {
-	if (o->GetType() != GameObjectType("Asteroid") && o->GetType() != GameObjectType("SmallAsteroid")) return false;
+	if (o->GetType() != GameObjectType("Asteroid") && o->GetType() != GameObjectType("SmallAsteroid") && o->GetType() != GameObjectType("EnemyBullet")) return false;
 	if (mBoundingShape.get() == NULL) return false;
 	if (o->GetBoundingShape().get() == NULL) return false;
 	return mBoundingShape->CollisionTest(o->GetBoundingShape());

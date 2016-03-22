@@ -12,6 +12,7 @@
 
 class GameObject;
 class Spaceship;
+class EnemySpaceship;
 class GUILabel;
 
 class Asteroids : public GameSession, public IKeyboardListener, public IGameWorldListener, public IScoreListener, public IPlayerListener
@@ -49,6 +50,7 @@ public:
 
 private:
 	shared_ptr<Spaceship> mSpaceship;
+	shared_ptr<EnemySpaceship> mEnemySpaceship;
 	shared_ptr<GUILabel> mScoreLabel;
 	shared_ptr<GUILabel> mLivesLabel;
 	shared_ptr<GUILabel> mGameOverLabel;
@@ -64,8 +66,9 @@ private:
 
 
 
-	void ResetSpaceship();
+	//void ResetSpaceship();
 	shared_ptr<GameObject>CreateSpaceship();
+	shared_ptr<GameObject>CreateEnemySpaceship();
 	void CreateGUI();
 	void CreatePowerUp(const uint num_powerUp);
 	void CreateAsteroids(const uint num_asteroids);
@@ -77,6 +80,7 @@ private:
 	const static uint CREATE_NEW_PLAYER = 2;
 	const static uint CREATE_POWERUP = 3;
 	const static uint INVINCIBLE = 4;
+	const static uint ENEMY_SHOOT = 5;
 	ScoreKeeper mScoreKeeper;
 	Player mPlayer;
 

@@ -7,6 +7,7 @@
 #include "GameWorld.h"
 #include "GameDisplay.h"
 #include "Spaceship.h"
+#include "EnemySpaceship.h"
 #include "BoundingShape.h"
 #include "BoundingSphere.h"
 #include "GUILabel.h"
@@ -61,13 +62,17 @@ void Asteroids::Start()
 
 	Animation *explosion_anim = AnimationManager::GetInstance().CreateAnimationFromFile("explosion", 64, 1024, 64, 64, "explosion_fs.png");
 	Animation *asteroid1_anim = AnimationManager::GetInstance().CreateAnimationFromFile("asteroid1", 128, 8192, 128, 128, "asteroid1_fs.png");
+	//Animation *asteroid3_anim = AnimationManager::GetInstance().CreateAnimationFromFile("asteroid3", 128, 8192, 128, 128, "asteroid3_fs.png");
 	Animation *spaceship_anim = AnimationManager::GetInstance().CreateAnimationFromFile("spaceship", 128, 128, 128, 128, "spaceship_fs.png");
 
 
 	// Create a spaceship and add it to the world
 	//mGameWorld->AddObject(CreateSpaceship());
+	// Create a enemy spaceship and add it to the world
+	mGameWorld->AddObject(CreateEnemySpaceship());
+	SetTimer(1000, ENEMY_SHOOT);
 	// Create some asteroids and add them to the world
-	CreateAsteroids(5);
+	CreateAsteroids(0);
 	//Create the GUI
 	CreateGUI();
 
@@ -99,6 +104,8 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 		case ' ':
 			// Create a spaceship and add it to the world
 			mGameWorld->AddObject(CreateSpaceship());
+			SetTimer(9000, INVINCIBLE);
+			//mGameWorld->AddObject(CreateEnemySpaceship());
 			// Create some asteroids and add them to the world
 			//CreateAsteroids(6);
 			CreatePowerUp(1);
@@ -167,6 +174,14 @@ void Asteroids::OnSpecialKeyReleased(int key, int x, int y)
 
 void Asteroids::OnObjectRemoved(GameWorld* world, shared_ptr<GameObject> object)
 {
+	if (object->GetType() == GameObjectType("EnemySpaceship"))
+	{
+	shared_ptr<GameObject> explosion = CreateExplosion();
+	explosion->SetPosition(mEnemySpaceship->GetPosition());
+	explosion->SetRotation(mEnemySpaceship->GetRotation());
+	mGameWorld->AddObject(explosion);
+	}
+
 	if (object->GetType() == GameObjectType("PowerUp"))
 	{
 		if (mSpaceship->mShieldOn==true)
@@ -224,6 +239,13 @@ void Asteroids::OnObjectRemoved(GameWorld* world, shared_ptr<GameObject> object)
 
 void Asteroids::OnTimer(int value)
 {
+	if (value == ENEMY_SHOOT)
+	{
+		mEnemySpaceship->Thrust(rand() % 8 + (-2));
+		mEnemySpaceship->Rotate(rand() % 120 + (-60));
+		mEnemySpaceship->Shoot();
+		SetTimer(2000, ENEMY_SHOOT);
+	}
 	if (value == CREATE_NEW_PLAYER)
 	{
 		mSpaceship->Reset();
@@ -274,6 +296,26 @@ shared_ptr<GameObject> Asteroids::CreateSpaceship()
 
 }
 
+shared_ptr<GameObject> Asteroids::CreateEnemySpaceship()
+{
+	// Create a raw pointer to a spaceship that can be converted to
+	// shared_ptrs of different types because GameWorld implements IRefCount
+	mEnemySpaceship = make_shared<EnemySpaceship>();
+	mEnemySpaceship->SetBoundingShape(make_shared<BoundingSphere>(mEnemySpaceship->GetThisPtr(), 4.0f));
+	shared_ptr<Shape> enemy_bullet_shape = make_shared<Shape>("bullet.shape");
+	mEnemySpaceship->SetEnemyBulletShape(enemy_bullet_shape);
+	Animation *anim_ptr = AnimationManager::GetInstance().GetAnimationByName("spaceship");
+	shared_ptr<Sprite> spaceship_sprite =
+		make_shared<Sprite>(anim_ptr->GetWidth(), anim_ptr->GetHeight(), anim_ptr);
+	mEnemySpaceship->SetSprite(spaceship_sprite);
+	mEnemySpaceship->SetScale(0.1f);
+	// Reset spaceship back to centre of the world
+	mEnemySpaceship->Reset();
+	// Return the spaceship so it can be added to the world
+	return mEnemySpaceship;
+
+}
+
 void Asteroids::CreatePowerUp(const uint num_powerUp)
 {
 	mPowerUpCount = num_powerUp;
@@ -312,7 +354,7 @@ shared_ptr<GameObject> Asteroids::CreateSmallAsteroids(const uint num_asteroids)
 		shared_ptr<Sprite> asteroid_sprite = make_shared<Sprite>(anim_ptr->GetWidth(), anim_ptr->GetHeight(), anim_ptr);
 		asteroid_sprite->SetLoopAnimation(true);
 		shared_ptr<GameObject> smallAsteroid = make_shared<SmallAsteroid>();
-		smallAsteroid->SetBoundingShape(make_shared<BoundingSphere>(smallAsteroid->GetThisPtr(), 10.0f));
+		smallAsteroid->SetBoundingShape(make_shared<BoundingSphere>(smallAsteroid->GetThisPtr(), 4.0f));
 		smallAsteroid->SetSprite(asteroid_sprite);
 		smallAsteroid->SetScale(0.1f);
 		mGameWorld->AddObject(smallAsteroid);
