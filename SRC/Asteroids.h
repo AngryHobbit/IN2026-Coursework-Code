@@ -48,6 +48,7 @@ public:
 	// Override the default implementation of ITimerListener ////////////////////
 	void OnTimer(int value);
 
+
 private:
 	shared_ptr<Spaceship> mSpaceship;
 	shared_ptr<EnemySpaceship> mEnemySpaceship;
@@ -81,9 +82,9 @@ private:
 	const static uint CREATE_POWERUP = 3;
 	const static uint INVINCIBLE = 4;
 	const static uint ENEMY_SHOOT = 5;
+	const static uint SHOW_GAME_START = 6;
 	ScoreKeeper mScoreKeeper;
 	Player mPlayer;
-
 	bool mGameStarted;
 };
 

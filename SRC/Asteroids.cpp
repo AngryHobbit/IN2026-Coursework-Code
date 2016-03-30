@@ -62,7 +62,7 @@ void Asteroids::Start()
 
 	Animation *explosion_anim = AnimationManager::GetInstance().CreateAnimationFromFile("explosion", 64, 1024, 64, 64, "explosion_fs.png");
 	Animation *asteroid1_anim = AnimationManager::GetInstance().CreateAnimationFromFile("asteroid1", 128, 8192, 128, 128, "asteroid1_fs.png");
-	//Animation *asteroid3_anim = AnimationManager::GetInstance().CreateAnimationFromFile("asteroid3", 128, 8192, 128, 128, "asteroid3_fs.png");
+	//Animation *asteroid3_anim = AnimationManager::GetInstance().CreateAnimationFromFile("asteroid2", 128, 8192, 128, 128, "asteroid2_fs.png");
 	Animation *spaceship_anim = AnimationManager::GetInstance().CreateAnimationFromFile("spaceship", 128, 128, 128, 128, "spaceship_fs.png");
 
 
@@ -72,7 +72,9 @@ void Asteroids::Start()
 	mGameWorld->AddObject(CreateEnemySpaceship());
 	SetTimer(1000, ENEMY_SHOOT);
 	// Create some asteroids and add them to the world
-	CreateAsteroids(0);
+	CreateAsteroids(5);
+
+	CreatePowerUp(1);
 	//Create the GUI
 	CreateGUI();
 
@@ -103,16 +105,26 @@ void Asteroids::OnKeyPressed(uchar key, int x, int y)
 		{
 		case ' ':
 			// Create a spaceship and add it to the world
+			mScoreKeeper.mScore = 0;
+			mScoreKeeper.FireScoreChanged();
+			mPlayer.mLives = 3;
 			mGameWorld->AddObject(CreateSpaceship());
 			SetTimer(9000, INVINCIBLE);
+			mLevel = 0;
+			
+			mGameWorld->FlagForRemoval(mEnemySpaceship);
+
+			//mGameWorld->  GetType() == GameObjectType("PowerUp"));
+			//mGameWorld->AddObject(CreateEnemySpaceship());
+			//SetTimer(1000, ENEMY_SHOOT);
 			//mGameWorld->AddObject(CreateEnemySpaceship());
 			// Create some asteroids and add them to the world
 			//CreateAsteroids(6);
-			CreatePowerUp(1);
+			//CreatePowerUp(1);
 			mGameStarted = true;
 			mStartLabel->SetVisible(false);
 			mHighScoreLabel->SetVisible(false);
-			mHighScoreNumLabel->SetVisible(false);
+			mHighScoreNumLabel->SetVisible(false);  
 			break;
 		default:
 			break;
@@ -176,23 +188,42 @@ void Asteroids::OnObjectRemoved(GameWorld* world, shared_ptr<GameObject> object)
 {
 	if (object->GetType() == GameObjectType("EnemySpaceship"))
 	{
-	shared_ptr<GameObject> explosion = CreateExplosion();
-	explosion->SetPosition(mEnemySpaceship->GetPosition());
-	explosion->SetRotation(mEnemySpaceship->GetRotation());
-	mGameWorld->AddObject(explosion);
+		if (!mGameStarted)
+		{
+			shared_ptr<GameObject> explosion = CreateExplosion();
+			explosion->SetPosition(mEnemySpaceship->GetPosition());
+			explosion->SetRotation(mEnemySpaceship->GetRotation());
+			mGameWorld->AddObject(explosion);
+			mGameWorld->AddObject(CreateEnemySpaceship());
+		}
 	}
 
 	if (object->GetType() == GameObjectType("PowerUp"))
 	{
-		if (mSpaceship->mShieldOn==true)
+		if (!mGameStarted)
 		{
-			if (mSpaceship->mShieldLevel2==true)
+			if (mEnemySpaceship->mShieldOn == true)
 			{
-				mSpaceship->mShieldLevel3 = true;
+				if (mEnemySpaceship->mShieldLevel2 == true)
+				{
+					mEnemySpaceship->mShieldLevel3 = true;
+				}
+				mEnemySpaceship->mShieldLevel2 = true;
 			}
-			mSpaceship->mShieldLevel2 = true;
+			mEnemySpaceship->mShieldOn = true;
 		}
-		mSpaceship->mShieldOn = true;
+		else
+		{
+			if (mSpaceship->mShieldOn == true)
+			{
+				if (mSpaceship->mShieldLevel2 == true)
+				{
+					mSpaceship->mShieldLevel3 = true;
+				}
+				mSpaceship->mShieldLevel2 = true;
+			}
+			mSpaceship->mShieldOn = true;
+		}
 		SetTimer(3000, CREATE_POWERUP);
 	}
 
@@ -241,10 +272,21 @@ void Asteroids::OnTimer(int value)
 {
 	if (value == ENEMY_SHOOT)
 	{
-		mEnemySpaceship->Thrust(rand() % 8 + (-2));
-		mEnemySpaceship->Rotate(rand() % 120 + (-60));
-		mEnemySpaceship->Shoot();
-		SetTimer(2000, ENEMY_SHOOT);
+		if (!mGameStarted)
+		{
+			mEnemySpaceship->Thrust(rand() % 10 + (-2));
+			mEnemySpaceship->Rotate(rand() % 120 + (-60));
+			mEnemySpaceship->Shoot();
+			SetTimer(1000, ENEMY_SHOOT);
+		}
+		if (mGameStarted)
+		{
+			mEnemySpaceship->Thrust(rand() % 10 + (-2));
+			mEnemySpaceship->Rotate(mSpaceship->GetPosition().x - mSpaceship->GetPosition().y);
+			mEnemySpaceship->Shoot();
+			SetTimer(1000, ENEMY_SHOOT);
+
+		}
 	}
 	if (value == CREATE_NEW_PLAYER)
 	{
@@ -262,6 +304,20 @@ void Asteroids::OnTimer(int value)
 	if (value == SHOW_GAME_OVER)
 	{
 		mGameOverLabel->SetVisible(true);
+		SetTimer(3000, SHOW_GAME_START);
+	}
+
+	if (value == SHOW_GAME_START)
+	{
+		mGameOverLabel->SetVisible(false);
+		mLivesLabel->SetVisible(false);
+		mScoreLabel->SetVisible(false);
+		mScoreKeeper.mScore = 0;
+		mLevel = 0;
+		CreateGUI();
+		mGameStarted = false;
+		mGameWorld->AddObject(CreateEnemySpaceship());
+		SetTimer(1000, ENEMY_SHOOT);
 	}
 
 	if (value == CREATE_POWERUP)
@@ -310,7 +366,7 @@ shared_ptr<GameObject> Asteroids::CreateEnemySpaceship()
 	mEnemySpaceship->SetSprite(spaceship_sprite);
 	mEnemySpaceship->SetScale(0.1f);
 	// Reset spaceship back to centre of the world
-	mEnemySpaceship->Reset();
+	mEnemySpaceship->SetPosition(GLVector3f(0, 25, 0));
 	// Return the spaceship so it can be added to the world
 	return mEnemySpaceship;
 
@@ -467,6 +523,13 @@ void Asteroids::OnPlayerKilled(int lives_left)
 	else
 	{
 		SetTimer(500, SHOW_GAME_OVER);
+
+		//mScoreKeeper.mScore = mScoreKeeper.mScore;
+		//mScoreKeeper.FireScoreChanged();
+		ofstream highScore;
+		highScore.open("HighScore.txt");
+		highScore << mScoreKeeper.mScore;
+		highScore.close();
 	}
 }
 

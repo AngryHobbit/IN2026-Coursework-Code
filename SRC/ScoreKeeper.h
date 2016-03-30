@@ -30,10 +30,10 @@ public:
 			mScore += 5;
 			FireScoreChanged();
 		}
-		ofstream highScore;
+		/*ofstream highScore;
 		highScore.open("HighScore.txt");
 		highScore << mScore;
-		highScore.close();
+		highScore.close();*/
 	}
 
 	void AddListener(shared_ptr<IScoreListener> listener)
@@ -49,8 +49,9 @@ public:
 		}
 	}
 
-private:
 	int mScore;
+
+private:
 
 	typedef std::list< shared_ptr<IScoreListener> > ScoreListenerList;
 

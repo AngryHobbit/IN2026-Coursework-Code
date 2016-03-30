@@ -12,6 +12,9 @@ using namespace std;
 EnemySpaceship::EnemySpaceship()
 	: GameObject("EnemySpaceship"), mEnemyThrust(0)
 {
+	mShieldOn = true;
+	mShieldLevel2 = true;
+	mShieldLevel3 = true;
 }
 
 /** Construct a spaceship with given position, velocity, acceleration, angle, and rotation. */
@@ -58,10 +61,32 @@ void EnemySpaceship::Render(void)
 
 
 	// Enable lighting
-	glEnable(GL_LIGHTING);
+	//glEnable(GL_LIGHTING);
 	GameObject::Render();
 
-		glColor3f(0.9, 0.0, 0.0);
+	if (mShieldOn)
+	{
+		glScalef(7, 6, 8);
+		// Disable lighting for solid colour lines
+		glDisable(GL_LIGHTING);
+		// Start drawing lines
+		glBegin(GL_LINE_LOOP);
+
+		if (mShieldLevel3)
+		{
+			// Set colour to Green
+			glColor3f(0.0, 0.9, 0.0);
+		}
+		else if (mShieldLevel2)
+		{
+			// Set colour to Blue
+			glColor3f(0.0, 0.0, 0.9);
+		}
+		else
+		{
+			// Set colour to Red
+			glColor3f(0.9, 0.0, 0.0);
+		}
 		// Add vertices to draw an octagon
 		glVertex3f(-7, -7, 0.0);
 		glVertex3f(-10, 0, 0.0);
@@ -75,6 +100,7 @@ void EnemySpaceship::Render(void)
 		glEnd();
 		// Enable lighting
 		glEnable(GL_LIGHTING);
+	}
 }
 
 /** Fire the rockets. */
@@ -126,5 +152,23 @@ bool EnemySpaceship::CollisionTest(shared_ptr<GameObject> o)
 
 void EnemySpaceship::OnCollision(const GameObjectList &objects)
 {
-	mWorld->FlagForRemoval(GetThisPtr());
+	if (mShieldOn == true)
+	{
+		if (mShieldLevel3 == true)
+		{
+			mShieldLevel3 = false;
+		}
+		else if (mShieldLevel2 == true)
+		{
+			mShieldLevel2 = false;
+		}
+		else
+		{
+			mShieldOn = false;
+		}
+	}
+	else
+	{
+		mWorld->FlagForRemoval(GetThisPtr());
+	}
 }
